@@ -45,7 +45,9 @@
         real(REAL64),   allocatable :: CB(:);
         real(REAL64),   allocatable :: Y(:);                     
         real(REAL64),   allocatable :: XB(:);
+        real(REAL64),   allocatable :: ULI(:);
         real(REAL64),   allocatable :: CoordsNodesInZone(:, :);   
+        real(REAL64),   allocatable :: resVec(:);
         integer(INT32), allocatable :: BCsType(:, :);
     end type DDDMS_Matrix
     
@@ -238,8 +240,7 @@ contains
                 pause;
                 stop;
             end if  !CLOSE IF STATEMENT ON ALLOCATE STATUS FOR LOADER OBJECT.
-            self%interfNodesFileName = trim(currentLine);
-            !self%interfNodesFileName = currentLine;
+            self%interfNodesFileName = trim(currentLine);                       
             close(10);       
 
             !┌─────────────────────────────────────────────────────┐

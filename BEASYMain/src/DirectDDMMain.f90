@@ -22,6 +22,7 @@
         use GlobalSchurComplementAssembler_Module;
         use InterfaceSolutionCalculator_Module;
         use BoundarySolutionCalculator_Module;
+        use getResultsVector_Module;
         implicit none;
         
         !╔════════════════╗
@@ -64,9 +65,10 @@
         class(DDDMS_GlobalSchurComplementAssembler), allocatable :: GloSchurComp_Assembler;
         class(DDDMS_InterfaceSolutionCalculator),    allocatable :: InterSol_Calculator;
         class(DDDMS_BoundarySolutionCalculator),     allocatable :: BoundSol_Calculator;
+        type(DDDMS_getResultsVector),               allocatable :: ResVec;
         real(REAL64)                                             :: start_time;
         real(REAL64)                                             :: stop_time;
-
+        integer(INT64)                                           :: nzones;
         
         !╔══════════════════════════════════════════════════════════════════╗
         !║CALL UTILITY PROCEDURE TO COLLECT DATA FROM COMMAND LINE ARGUMENTS║
@@ -133,6 +135,7 @@
                 currBatchCommand = currBatchCommand + merge(3, 0, index( batchFileCommands(k), "ASSEMB_GSC" ) /= 0);
                 currBatchCommand = currBatchCommand + merge(4, 0, index( batchFileCommands(k), "CALC_IS"    ) /= 0);
                 currBatchCommand = currBatchCommand + merge(5, 0, index( batchFileCommands(k), "CALC_BS"    ) /= 0);
+                currBatchCommand = currBatchCommand + merge(6, 0, index( batchFileCommands(k), "RES_VEC"    ) /= 0);
                 
                 commandLine      = trim( '"'//trim( inputSolverPathName(:) )//'"'//" -rootname "//'"'//trim( inputModelFileName( 1:index(inputModelFileName, '.dat') - 1) )//'"' ); 
                 
@@ -309,6 +312,17 @@
                             
                         write(OUTPUT_UNIT, '("DONE")');
                         write(OUTPUT_UNIT, *);
+                    case( 6 )    
+                        write(OUTPUT_UNIT,*)'Creating results vector';
+                        flush OUTPUT_UNIT;
+                        nzones=size(dataContainer%ZonesData);
+                        allocate( ResVec, STAT = status, SOURCE = DDDMS_getResultsVector() );
+                        allocate( ResVec%ZonalResults(nzones), STAT = status);
+                        if (status.gt.0) then
+                            write(*,*)'Allocation failed for results vector object!....'
+                            stop;
+                        endif
+                        call ResVec%getResultsVector(dataContainer);
                         
                     case default
                         print *, "Entered command was not recognised.";

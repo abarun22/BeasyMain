@@ -52,6 +52,7 @@
 		<File RelativePath=".\src\DataLoader_Module.f90"/>
 		<File RelativePath=".\src\DataStructure_Module.f90"/>
 		<File RelativePath=".\src\DirectDDMMain.f90"/>
+		<File RelativePath=".\src\getResultsVector.f90"/>
 		<File RelativePath=".\src\GlobalSchurComplementAssembler_Module.f90"/>
 		<File RelativePath=".\src\InterfaceSolutionCalculator_Module.f90"/>
 		<File RelativePath=".\src\LocalSchurComplementCalculator_Module.f90"/>
