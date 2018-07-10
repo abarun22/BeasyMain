@@ -35,7 +35,7 @@
 				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|x64">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" InlineFunctionExpansion="expandOnlyInline" AdditionalIncludeDirectories="$(ADVISOR_2016_DIR)\include\intel64" OpenMP="OpenMPParallelCode" EmitBuildDependencies="true" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFFortranCompilerTool" AdditionalOptions="/Qguide" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" InlineFunctionExpansion="expandOnlyInline" AdditionalIncludeDirectories="$(ADVISOR_2016_DIR)\include\intel64" OpenMP="OpenMPParallelCode" EmitBuildDependencies="true" RuntimeLibrary="rtMultiThreadedDLL"/>
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="$(IntDir)\..\..\libs;$(ADVISOR_2016_DIR)\lib64;C:\Program Files (x86)\IntelSWTools\Advisor XE 2016\lib64" GenerateDebugInformation="true" SubSystem="subSystemConsole" AdditionalDependencies="blas.lib lapack.lib libadvisor.lib"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
