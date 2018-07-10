@@ -1,55 +1,153 @@
- countDuplicates:                   184
- IndepInterfNodesCount          47
- numRowBlocksInZone:                     5
- IndepInterfNodesCount          98
- numRowBlocksInZone:                     3
- IndepInterfNodesCount         127
- numRowBlocksInZone:                     4
- IndepInterfNodesCount          47
- numRowBlocksInZone:                     5
- IndepInterfNodesCount         127
- numRowBlocksInZone:                     4
- IndepInterfNodesCount          98
- numRowBlocksInZone:                     3
- thread_number                     1
- thread_number                     5
- thread_number                     6
- thread_number                     3
- thread_number                     4
+ countDuplicates:                     0
+ IndepInterfNodesCount           9
+ numRowBlocksInZone:                     1
+ IndepInterfNodesCount           9
+ numRowBlocksInZone:                     1
  thread_number                     2
+ thread_number                     1
  Interface nodes for zone:                     1
  Interface nodes for zone:                     2
- Interface nodes for zone:                     3
- Interface nodes for zone:                     4
- Interface nodes for zone:                     5
- Interface nodes for zone:                     6
  Size of gGlob array:
-         816
+          27
  Size of SGlob array:
-      665856
+         729
+ Size of IndependenInterfaceNodesArray:
+           9
  Size of interface solution array:
-         816
+          27
+ Zonal interface index
+                     1                     3
+                     4                     6
+                     7                     9
+                    10                    12
+                    13                    15
+                    16                    18
+                    19                    21
+                    22                    24
+                    25                    27
+ UL array
+ -3.367184846461571E-004 -1.683590513168941E-003  6.666673671996530E-003
+ -3.367184351113683E-004 -3.367184351315202E-004  6.666673599671149E-003
+ -1.683590512797860E-003 -3.367184847480611E-004  6.666673672083544E-003
+ -1.683590343874475E-003 -1.683590344004754E-003  6.666673740487560E-003
+ -3.367190217939746E-004 -1.010154161835483E-003  6.666673607328462E-003
+ -1.010154161755138E-003 -3.367190218556019E-004  6.666673607350640E-003
+ -1.683589974331648E-003 -1.010154153956737E-003  6.666673677491068E-003
+ -1.010154153995777E-003 -1.683589974509890E-003  6.666673677469525E-003
+ -1.010154199327080E-003 -1.010154199462042E-003  6.666673626561400E-003
+ Size of CB array for Zone:           1
+          27
+ countStep                     1
+ intfnod          46
+ countStep                     2
+ intfnod          47
+ countStep                     3
+ intfnod          48
+ countStep                     4
+ intfnod          49
+ countStep                     5
+ intfnod          50
+ countStep                     6
+ intfnod          51
+ countStep                     7
+ intfnod          52
+ countStep                     8
+ intfnod          53
+ countStep                     9
+ intfnod          54
+ f_InterfaceSolution
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
  Size of boundary solution array:
- currZone, size(XB)           1         798
+ currZone, size(XB)           1         135
  Size of allocated displacement array
-         313
+          54
+ icount                   135
+ scaleIndexVal                     1
+ Size of %BCsType array:
+ currZone, size(BCsType)           1         162
+ IndependenInterfaceNodesArray array:
+                    46                    47                    48
+                    49                    50                    51
+                    52                    53                    54
+ Indices: Interface nodes
+                    46                    47                    48
+                    49                    50                    51
+                    52                    53                    54
+ Indices2: Interface nodes
+                     1                     2                     3
+                     4                     5                     6
+                     7                     8                     9
+ Size of indices2 array
+           9
+ Zonal interface index
+                     1                     3
+                     4                     6
+                     7                     9
+                    10                    12
+                    13                    15
+                    16                    18
+                    19                    21
+                    22                    24
+                    25                    27
+ UL array
+ -3.367184846461571E-004 -1.683590513168941E-003  6.666673671996530E-003
+ -3.367184351113683E-004 -3.367184351315202E-004  6.666673599671149E-003
+ -1.683590512797860E-003 -3.367184847480611E-004  6.666673672083544E-003
+ -1.683590343874475E-003 -1.683590344004754E-003  6.666673740487560E-003
+ -3.367190217939746E-004 -1.010154161835483E-003  6.666673607328462E-003
+ -1.010154161755138E-003 -3.367190218556019E-004  6.666673607350640E-003
+ -1.683589974331648E-003 -1.010154153956737E-003  6.666673677491068E-003
+ -1.010154153995777E-003 -1.683589974509890E-003  6.666673677469525E-003
+ -1.010154199327080E-003 -1.010154199462042E-003  6.666673626561400E-003
+ Size of CB array for Zone:           2
+          27
+ countStep                     1
+ countStep                     2
+ countStep                     3
+ countStep                     4
+ countStep                     5
+ countStep                     6
+ countStep                     7
+ countStep                     8
+ countStep                     9
+ f_InterfaceSolution
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
  Size of boundary solution array:
- currZone, size(XB)           2         321
+ currZone, size(XB)           2         135
  Size of allocated displacement array
-         205
- Size of boundary solution array:
- currZone, size(XB)           3         423
- Size of allocated displacement array
-         268
- Size of boundary solution array:
- currZone, size(XB)           4         798
- Size of allocated displacement array
-         313
- Size of boundary solution array:
- currZone, size(XB)           5         423
- Size of allocated displacement array
-         268
- Size of boundary solution array:
- currZone, size(XB)           6         321
- Size of allocated displacement array
-         205
+          54
+ icount                   135
+ scaleIndexVal                    55
+ Size of %BCsType array:
+ currZone, size(BCsType)           2         162
+ IndependenInterfaceNodesArray array:
+                   100                   101                   102
+                   103                   104                   105
+                   106                   107                   108
+ Indices: Interface nodes
+                    46                    47                    48
+                    49                    50                    51
+                    52                    53                    54
+ Indices2: Interface nodes
+                     1                     2                     3
+                     4                     5                     6
+                     7                     8                     9
+ Size of indices2 array
+           9
+ Results vector

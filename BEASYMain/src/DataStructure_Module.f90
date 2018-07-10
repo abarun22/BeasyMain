@@ -12,11 +12,12 @@
         integer(INT32)                  :: analysType     = 2;
         real(REAL64)                    :: gMatScaleFact  = 1000.0;
         integer(INT32)                  :: numberOfZones  = 1;
+        integer(INT32), allocatable     :: zormap(:);
         integer(INT64)                  :: blockSizeValue = 100;
         character(len = :), allocatable :: interfNodesFileName;
     contains
-        procedure :: loadInputParams;
-        
+        procedure                       :: loadInputParams;
+        procedure                       :: isNodMin        
     end type DDDMS_InputParams  
     
     !┌───────────────────────────────────────────────────────────────┐
@@ -66,12 +67,14 @@
     !└─────────────────────────────────────────────────────┘
     type :: DDDMS_DataContainer
         real(REAL64),       allocatable :: U_InterfaceSolution(:);
+        real(REAL64),       allocatable :: f_InterfaceSolution(:);
         integer(INT64),     allocatable :: IndependenInterfaceNodesArray(:, :);
+        integer(INT64),     allocatable :: InterfaceNP(:, :);
         type(DDDMS_Matrix), allocatable :: ZonesData(:);
         real(REAL64),       allocatable :: SGlob(:, :);
         real(REAL64),       allocatable :: gGlob(:);
-    !contains
-    !    final :: DelDDDMS_DataContainer;
+!    contains
+        
     end type DDDMS_DataContainer
     
     !┌─────────────────────────────────────────────────────────────────┐
@@ -104,6 +107,8 @@ contains
         self%gGlob(:) = 1.0;
         
     end function NewDDDMS_DataContainer
+    
+    
 
     !┌────────────────────────────────────────────────────────────────────┐
     !│DDDMS_DATACONTAINER USER-DEFINED DATA TYPE DESTRUCTOR IMPLEMENTATION│
@@ -169,7 +174,7 @@ contains
         character(len = 100)     :: currentLine;
         integer(INT64)           :: file_size_1;
         integer(INT64)           :: file_size_2;
-        integer(INT32)           :: status;
+        integer(INT32)           :: status,nzones,ZoneID,ZorderID,ij;
         logical                  :: file_exists_1; 
         logical                  :: file_exists_2; 
 
@@ -215,6 +220,7 @@ contains
             !│READ THE VALUE INDICATING THE NUMBER OF ZONES IN THE MODEL│
             !└──────────────────────────────────────────────────────────┘
             read(10, '(I6)', IOSTAT = status) self%numberOfZones;
+            nzones=self%numberOfZones;
             if (status /= 0) then
                 print*, "Failed reading number of zones in file : ", inputPathFileName;
                 print*, "Errore code: ", status;
@@ -240,7 +246,24 @@ contains
                 pause;
                 stop;
             end if  !CLOSE IF STATEMENT ON ALLOCATE STATUS FOR LOADER OBJECT.
-            self%interfNodesFileName = trim(currentLine);                       
+            self%interfNodesFileName = trim(currentLine);                    
+            
+            allocate( self%zormap(self%numberOfZones), STAT = status);
+            if (status /= 0) then
+                print*, "Failed allocation of self%zormap!";
+                print*, "Errore code: ", status;
+                pause;
+                stop;
+            end if
+            
+            do ij = 1,nzones
+                read(10, fmt="(3 (I8))",IOSTAT = status) ZoneID, ZorderID;
+                self%zormap(ZorderID)=ZoneID;
+                read(10,*)
+                read(10,*)
+                read(10,*)
+            enddo
+            
             close(10);       
 
             !┌─────────────────────────────────────────────────────┐
@@ -270,5 +293,28 @@ contains
         endif ! END IF STATEMENT OVER CHECK IF FILES EXIST AND ARE NOT EMPTY
    
     end subroutine loadInputParams
-
+!
+!********************************************************************************************
+    logical function isNodMin(self,dataContainer,intfnod)
+!********************************************************************************************
+!   Objective: To check if a given interface node corresponds to the lower node ID as per  
+!              the node pair specification in the interface nodes file
+!********************************************************************************************
+!
+        class(DDDMS_InputParams)                :: self
+        class(DDDMS_DataContainer)              :: dataContainer
+        integer(INT32)                          :: inp,mnod,intfnod;
+    
+        isNodMin=.false.
+        do inp=1,size(dataContainer%InterfaceNP(:,1))
+            mnod=min(dataContainer%InterfaceNP(inp,1),dataContainer%InterfaceNP(inp,2))            
+            if (intfnod.eq.mnod) then
+                isNodMin=.true.
+            endif
+        enddo    
+    
+    end function isNodMin
+        
 end module DataStructure_Module
+
+!********************************************************************************************

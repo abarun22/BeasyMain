@@ -137,7 +137,8 @@
                 currBatchCommand = currBatchCommand + merge(5, 0, index( batchFileCommands(k), "CALC_BS"    ) /= 0);
                 currBatchCommand = currBatchCommand + merge(6, 0, index( batchFileCommands(k), "RES_VEC"    ) /= 0);
                 
-                commandLine      = trim( '"'//trim( inputSolverPathName(:) )//'"'//" -rootname "//'"'//trim( inputModelFileName( 1:index(inputModelFileName, '.dat') - 1) )//'"' ); 
+!                commandLine      = trim( '"'//trim( inputSolverPathName(:) )//'"'//" -rootname "//'"'//trim( inputModelFileName( 1:index(inputModelFileName, '.dat') - 1) )//'"' ); 
+                commandLine      = trim( '"'//trim( inputSolverPathName(:) )//'"'//" -rootname "//'"'//trim( inputModelFileName( 1:index(inputModelFileName, '.dat') - 1) )//'"'//" -DDMtask createZoneAB" ); 
                 
                 select case ( currBatchCommand )
                     case ( 1 )
@@ -313,7 +314,7 @@
                         write(OUTPUT_UNIT, '("DONE")');
                         write(OUTPUT_UNIT, *);
                     case( 6 )    
-                        write(OUTPUT_UNIT,*)'Creating results vector';
+                        write(OUTPUT_UNIT,*)'Creating results vector......';
                         flush OUTPUT_UNIT;
                         nzones=size(dataContainer%ZonesData);
                         allocate( ResVec, STAT = status, SOURCE = DDDMS_getResultsVector() );

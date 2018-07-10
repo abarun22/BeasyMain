@@ -112,6 +112,7 @@ contains
 ! APB
         integer(INT64)                  :: index1;      
         integer(INT64)                  :: ibs;
+        integer(INT32)                  :: ZoneID1,ZoneID2,ZoneIDm,ifindex1,ifindex2
 !        integer(INT64)                  :: outp(2,4);
 ! APB
         
@@ -145,6 +146,16 @@ contains
             stop;
         else
             IndepInterNodesArrayTEMP(:, :) = -1; !INITIALISE "INDEPINTERNODESARRAYTEMP" ARRAY TO VALUE (-1).
+        end if
+        
+        allocate(dataContainer%InterfaceNP(( countLinesFile - 1 ),2), STAT=status);
+        if (status /= 0) then
+            print*, "Failed allocation of array InterfaceNP!";
+            print*, "Error code: ", status;
+            pause;
+            stop;
+        else
+            dataContainer%InterfaceNP(:, :) = 0;
         end if
         
         !┌─────────────────────────────────────────────────────────┐
@@ -197,18 +208,35 @@ contains
         else
             dataContainer%IndependenInterfaceNodesArray(:, :) = 0;    
         end if
-
+        
         !┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
         !│COPY INDEPENDENT INTERFACE NODES DATA FROM TEMPORARY DATA STRUCTURE "INDEPINTERNODESARRAYTEMP" TO│
         !│DEFINITIVE DATA STRUCTURE "DATACONTAINER%INDEPENDENINTERFACENODESARRAY"                          │
         !└─────────────────────────────────────────────────────────────────────────────────────────────────┘
         countDuplicates = 1;
         do i = 1, size(IndepInterNodesArrayTEMP, 1)
-            if( IndepInterNodesArrayTEMP(i, 1) /= -1 ) then
+            ifindex1=0
+            ifindex2=0
+            if( IndepInterNodesArrayTEMP(i, 1) /= -1 ) then                
+                ZoneID1=IndepInterNodesArrayTEMP(i, 2)
+                ZoneID2=IndepInterNodesArrayTEMP(i, 4)
+                do j = 1,size(inputParamsData%zormap)                    
+                    zoneIDm=inputParamsData%zormap(j)
+                    if (ZoneID1.eq.zoneIDm)then
+                        ifindex1=j
+                    endif
+                    if (ZoneID2.eq.zoneIDm)then
+                        ifindex2=j
+                    endif
+                enddo
+                !dataContainer%IndependenInterfaceNodesArray( countDuplicates, IndepInterNodesArrayTEMP(i, 2) ) = IndepInterNodesArrayTEMP(i, 1);
+                !dataContainer%IndependenInterfaceNodesArray( countDuplicates, IndepInterNodesArrayTEMP(i, 4) ) = IndepInterNodesArrayTEMP(i, 3);
                 
-                dataContainer%IndependenInterfaceNodesArray( countDuplicates, IndepInterNodesArrayTEMP(i, 2) ) = IndepInterNodesArrayTEMP(i, 1);
-                dataContainer%IndependenInterfaceNodesArray( countDuplicates, IndepInterNodesArrayTEMP(i, 4) ) = IndepInterNodesArrayTEMP(i, 3);
+                dataContainer%IndependenInterfaceNodesArray( countDuplicates, ifindex1) = IndepInterNodesArrayTEMP(i, 1);
+                dataContainer%IndependenInterfaceNodesArray( countDuplicates, ifindex2) = IndepInterNodesArrayTEMP(i, 3);
                 
+                dataContainer%InterfaceNP(i,1)=IndepInterNodesArrayTEMP(i, 1);
+                dataContainer%InterfaceNP(i,2)=IndepInterNodesArrayTEMP(i, 3);
                 countDuplicates = countDuplicates + 1;
             end if
         end do     
