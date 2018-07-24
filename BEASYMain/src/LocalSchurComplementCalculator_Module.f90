@@ -106,17 +106,19 @@ contains
         !│BODY OF THE PROGRAM│
         !└───────────────────┘
 
+        write(*,*)'Schur complement calculation module....'
+        
         numOfZones = size( dataContainer%ZonesData, 1 );        
        
-        !$OMP PARALLEL NUM_THREADS(4) PRIVATE(thread_number, N, pivot, work, TempMAT_, info, status, ALPHA, BETA, seqstring, TempVEC_)                
+        !$OMP PARALLEL PRIVATE(thread_number, N, pivot, work, TempMAT_, info, status, ALPHA, BETA, seqstring, TempVEC_)                       
         
-        thread_number = OMP_GET_THREAD_NUM() + 1;        
+!        thread_number = OMP_GET_THREAD_NUM() + 1;        
         !do while( thread_number <= numOfZones )
         !$OMP DO
-            do thread_number = 1, numOfZones        
-                N = size( dataContainer%ZonesData( thread_number )%A00, 1 );
+            do thread_number = 1, numOfZones                    
             
-                WRITE(10,*)'thread_number',thread_number
+                N = size( dataContainer%ZonesData( thread_number )%A00, 1 );           
+                
 
                 !───────────────────────────────────────────────────────────────────────────           
                 !====================TO PRINT OUT DURING DEBUG STAGE========================
@@ -568,6 +570,8 @@ contains
 
                 !write(10,*)'LSC array CB: for Zone',thread_number
                 !write(10,*)dataContainer%ZonesData( thread_number )%CB
+                           
+                write(*,*)'DGEMV calculation'
             
                 !┌───────────────────────────────────────────┐
                 !│DEALLOCATE TEMPORARY SUPPORT ARRAY TEMPMAT_│
@@ -594,8 +598,8 @@ contains
             
                 !thread_number = thread_number + OMP_GET_NUM_THREADS();
                 !write(10,*)'thread_number_end-->',thread_number
-            end do !END OF DO-WHILE LOOP STATEMENT INTERNAL TO PARALLEL ZONE.
-        !$OMP ENDDO
+            end do !END OF DO-WHILE LOOP STATEMENT INTERNAL TO PARALLEL ZONE.            
+        !$OMP ENDDO                
         !$OMP END PARALLEL
        
     end subroutine calculateOnSM

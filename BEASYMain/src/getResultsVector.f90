@@ -79,8 +79,7 @@ contains
         open(NEWUNIT=nunit, FILE=filename, ERR=10)        
         
 ! Write results for all zones in the output file
-        nzones=size(resultsData%ZonesData);   
-        write(10,*)'Results vector'
+        nzones=size(resultsData%ZonesData);           
         do i = 1,nzones            
             iszXB=size(resultsData%ZonesData(i)%XB(:))        
             iszUL=size(resultsData%ZonesData(i)%ULI(:))
@@ -96,6 +95,7 @@ contains
         write(OUTPUT_UNIT,*)'Error opening file......',filename
 
  20     continue
+        write(OUTPUT_UNIT,*)'Results vector outputted in file:',filename
  
     end subroutine
 !*********************************************************************************************

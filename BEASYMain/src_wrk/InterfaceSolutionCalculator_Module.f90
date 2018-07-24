@@ -134,10 +134,23 @@ contains
             inputData%U_InterfaceSolution = 0.0; 
         end if        
         
+        allocate( inputData%f_InterfaceSolution( 3*size( inputData%IndependenInterfaceNodesArray, 1 ) ) , STAT = status );
+        if(status /= 0) then
+            print*, "Failed allocation of f_InterfaceSolution!";
+            print*, "Errore code: ", status;
+            pause;
+            stop;
+        else
+            inputData%f_InterfaceSolution = 0.0; 
+        end if        
+        
         !┌─────────────────────────────────────────────────────────────────┐
         !│FILL THE VECTOR GGLOB USING THE SOLUTION OF THE EQUATIONS A*X = B│
         !└─────────────────────────────────────────────────────────────────┘
         inputData%U_InterfaceSolution = inputData%gGlob;
+        
+        write(10,*)'Size of IndependenInterfaceNodesArray:'
+        write(10,*)size(inputData%IndependenInterfaceNodesArray, 1)
         
         write(10,*)'Size of interface solution array:'
         write(10,*)size(inputData%U_InterfaceSolution)

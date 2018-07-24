@@ -66,9 +66,11 @@
         class(DDDMS_InterfaceSolutionCalculator),    allocatable :: InterSol_Calculator;
         class(DDDMS_BoundarySolutionCalculator),     allocatable :: BoundSol_Calculator;
         type(DDDMS_getResultsVector),               allocatable :: ResVec;
-        real(REAL64)                                             :: start_time;
-        real(REAL64)                                             :: stop_time;
+        real(REAL64)                                             :: start_time, stop_time;
         integer(INT64)                                           :: nzones;
+! APB
+        integer(INT64)                                           :: ic1,ic2,elsc
+! APB
         
         !╔══════════════════════════════════════════════════════════════════╗
         !║CALL UTILITY PROCEDURE TO COLLECT DATA FROM COMMAND LINE ARGUMENTS║
@@ -139,23 +141,38 @@
                 
 !                commandLine      = trim( '"'//trim( inputSolverPathName(:) )//'"'//" -rootname "//'"'//trim( inputModelFileName( 1:index(inputModelFileName, '.dat') - 1) )//'"' ); 
                 commandLine      = trim( '"'//trim( inputSolverPathName(:) )//'"'//" -rootname "//'"'//trim( inputModelFileName( 1:index(inputModelFileName, '.dat') - 1) )//'"'//" -DDMtask createZoneAB" ); 
+!                write(*,*)'commandLine',commandLine
                 
                 select case ( currBatchCommand )
                     case ( 1 )
-                        write(OUTPUT_UNIT, '("BEASY Solver is being called............................: ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT,'("************************************************************************")');
+                        write(OUTPUT_UNIT, '("BEASY Solver is being called............................: ")');
+                        write(OUTPUT_UNIT,'("************************************************************************")');
                         flush OUTPUT_UNIT;
+                        
                         call cpu_time(start_time);
-                        call execute_command_line ( commandLine, wait = .true. ); !SYNCHRONOUS CALL TO BEASY SOLVER.
-                        call cpu_time(stop_time)
-                        write(OUTPUT_UNIT, '("(Elapsed Time : ")', ADVANCE = "NO");
+                        call system_clock(count=ic1)  
+!                        call execute_command_line ( commandLine, wait = .true. ); !SYNCHRONOUS CALL TO BEASY SOLVER.
+                        call system_clock(count=ic2)
+                        call cpu_time(stop_time)                       
+                        elsc=ic2 - ic1                        
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                        write(OUTPUT_UNIT, '("(Elapsed CPU Time : ")', ADVANCE = "NO");
                         write(OUTPUT_UNIT, '(E12.4)', ADVANCE = "NO") (stop_time - start_time);
-                        write(OUTPUT_UNIT, '("-[s]) ")', ADVANCE = "NO");
-
+                        write(OUTPUT_UNIT, '("-[s]) ")');
+                        
+                        write(OUTPUT_UNIT, '("(Elapsed System Time : ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT, '(i20)', ADVANCE = "NO") (elsc);
+                        write(OUTPUT_UNIT, '("-[s]) ")');                     
                         write(OUTPUT_UNIT, '("DONE")');
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
                         write(OUTPUT_UNIT, *);
+                        
                     
                     case( 2 )
-                        write(OUTPUT_UNIT, '("Local Schur Complement calculation is being performed...: ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT,'("************************************************************************")');
+                        write(OUTPUT_UNIT, '("Local Schur Complement calculation is being performed...: ")');
+                        write(OUTPUT_UNIT,'("************************************************************************")');
                         flush OUTPUT_UNIT;
                         
                         !╔════════════════════════════════════════════════════════════════════════════════════════╗
@@ -190,12 +207,22 @@
                                 pause;
                                 stop;
                             end if  !CLOSE IF STATEMENT ON ALLOCATE STATUS FOR DATACONTAINER OBJECT.
-
-                        
+                                                    
                             !┌──────────────────────────────────────────────────────────────────────────────┐
                             !│LOAD DATA FROM A SPECIFIC FOLDER USING LOADDATA PROCEDURE OF THE LOADER OBJECT│
-                            !└──────────────────────────────────────────────────────────────────────────────┘                            
+                            !└──────────────────────────────────────────────────────────────────────────────┘               
+                            write(OUTPUT_UNIT, '("Loading data.... ")');
+                            call system_clock(count=ic1)  
                             call loader%LoadData( dataContainer, inputParamsData );     ! APB: Polymorphism with type bound procedure
+                            call system_clock(count=ic2)
+                            elsc=ic2 - ic1              
+                            write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                            write(OUTPUT_UNIT, '("(Elapsed System Time : ")', ADVANCE = "NO");
+                            write(OUTPUT_UNIT, '(i20)', ADVANCE = "NO") elsc;
+                            write(OUTPUT_UNIT, '("-[s]) ")');                            
+                            write(OUTPUT_UNIT, '("DONE")');
+                            write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                            write(OUTPUT_UNIT, *);                            
  
                             !╔═════════════════════════════════════════════════════════════════════════════════════════════════════════╗
                             !║OBTAIN LOCAL SCHUR COMPLEMENT CALCULATOR OBJECT (SHARED MEMORY ARCHITECTURE) FROM SOLVERCONTROLLER OBJECT║
@@ -211,14 +238,23 @@
                             !┌────────────────────────────────────────────────────────────────────┐
                             !│CALCULATE LOCAL SCHUR COMPLEMENT FOR ALL ZONES INVOLVED IN THE MODEL│
                             !└────────────────────────────────────────────────────────────────────┘
+                            write(OUTPUT_UNIT, '("LSC calculation.... ")');
                             call cpu_time(start_time);
+                            call system_clock(count=ic1)  
                             call LocSchurComp_Calculator%calculate( dataContainer, inputParamsData );
+                            call system_clock(count=ic2)
                             call cpu_time(stop_time)
-                            write(OUTPUT_UNIT, '("(Elapsed Time : ")', ADVANCE = "NO");
+                            elsc=ic2 - ic1                        
+                            write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                            write(OUTPUT_UNIT, '("(Elapsed CPU Time : ")', ADVANCE = "NO");
                             write(OUTPUT_UNIT, '(E12.4)', ADVANCE = "NO") (stop_time - start_time);
-                            write(OUTPUT_UNIT, '("-[s]) ")', ADVANCE = "NO");
+                            write(OUTPUT_UNIT, '("-[s]) ")');
                             
+                            write(OUTPUT_UNIT, '("(Elapsed System Time : ")', ADVANCE = "NO");
+                            write(OUTPUT_UNIT, '(i20)', ADVANCE = "NO") elsc;
+                            write(OUTPUT_UNIT, '("-[s]) ")');                            
                             write(OUTPUT_UNIT, '("DONE")');
+                            write(OUTPUT_UNIT,*)'-------------------------------------------------';
                             write(OUTPUT_UNIT, *);
                             
                         else
@@ -229,7 +265,10 @@
                         endif !END OF IF STATEMENT CHECKING DATA
                         
                     case( 3 )
-                        write(OUTPUT_UNIT, '("Global Schur Complement assembling is being performed...: ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT,'("************************************************************************")');
+                        write(OUTPUT_UNIT, '("Global Schur Complement assembling is being performed...: ")');
+                        write(OUTPUT_UNIT,'("************************************************************************")');
+                        
                         flush OUTPUT_UNIT;
 
                         !╔═════════════════════════════════════════════════════════════════════╗
@@ -247,17 +286,27 @@
                         !║CALL SUBROUTINE "ASSEMBLY" TO ASSEMBLY ALL CONTRIBUTES PROVIDED BY ALL ZONES IN THE MODEL║
                         !╚═════════════════════════════════════════════════════════════════════════════════════════╝
                         call cpu_time(start_time);
+                        call system_clock(count=ic1)                                                      
                         call GloSchurComp_Assembler%Assembly( dataContainer,  inputParamsData);
+                        call system_clock(count=ic2)
                         call cpu_time(stop_time)
-                        write(OUTPUT_UNIT, '("(Elapsed Time : ")', ADVANCE = "NO");
+                        elsc=ic2 - ic1                        
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                        write(OUTPUT_UNIT, '("(Elapsed CPU Time : ")', ADVANCE = "NO");
                         write(OUTPUT_UNIT, '(E12.4)', ADVANCE = "NO") (stop_time - start_time);
-                        write(OUTPUT_UNIT, '("-[s]) ")', ADVANCE = "NO");
-                        
+                        write(OUTPUT_UNIT, '("-[s]) ")');
+                            
+                        write(OUTPUT_UNIT, '("(Elapsed System Time : ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT, '(i20)', ADVANCE = "NO") elsc;
+                        write(OUTPUT_UNIT, '("-[s]) ")');                        
                         write(OUTPUT_UNIT, '("DONE")');
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
                         write(OUTPUT_UNIT, *);
                         
                     case( 4 )    
-                        write(OUTPUT_UNIT, '("Interface solution is being calculated..................: ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT,'("************************************************************************")');
+                        write(OUTPUT_UNIT, '("Interface solution is being calculated..................: ")');
+                        write(OUTPUT_UNIT,'("************************************************************************")');
                         flush OUTPUT_UNIT;
                         
                         !╔═════════════════════════════════════════════════════════════════╗
@@ -275,17 +324,27 @@
                         !║CALL SUBROUTINE "CALCULATE" TO PERFORM CALCULATION OF INTERFACE SOLUTION ON INTERFACE║
                         !╚═════════════════════════════════════════════════════════════════════════════════════╝                        
                         call cpu_time(start_time);
+                        call system_clock(count=ic1)                                                                                                      
                         call InterSol_Calculator%calculate( dataContainer);
+                        call system_clock(count=ic2)
                         call cpu_time(stop_time)
-                        write(OUTPUT_UNIT, '("(Elapsed Time : ")', ADVANCE = "NO");
+                        elsc=ic2 - ic1                        
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                        write(OUTPUT_UNIT, '("(Elapsed CPU Time : ")', ADVANCE = "NO");
                         write(OUTPUT_UNIT, '(E12.4)', ADVANCE = "NO") (stop_time - start_time);
-                        write(OUTPUT_UNIT, '("-[s]) ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT, '("-[s]) ")');
                             
+                        write(OUTPUT_UNIT, '("(Elapsed System Time : ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT, '(i20)', ADVANCE = "NO") elsc;
+                        write(OUTPUT_UNIT, '("-[s]) ")');                            
                         write(OUTPUT_UNIT, '("DONE")');
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
                         write(OUTPUT_UNIT, *);
                         
                     case( 5 )    
-                        write(OUTPUT_UNIT, '("Boundary solution is being calculated...................: ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT,'("************************************************************************")');
+                        write(OUTPUT_UNIT, '("Boundary solution is being calculated...................: ")');
+                        write(OUTPUT_UNIT,'("************************************************************************")');
                         flush OUTPUT_UNIT;
 
                         !╔════════════════════════════════════════════════════════════════╗
@@ -304,17 +363,28 @@
                         !╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝                        
                         allocate(zonesBounSol, SOURCE = Utility_ZoneBoundarySolution( batchFileCommands(k), inputParamsData ) );
                                               
-                        call cpu_time(start_time);
+                        call cpu_time(start_time);                        
+                        call system_clock(count=ic1)                                                                                                      
                         call BoundSol_Calculator%calculate( dataContainer, zonesBounSol, inputParamsData );
-                        call cpu_time(stop_time)
-                        write(OUTPUT_UNIT, '("(Elapsed Time : ")', ADVANCE = "NO");
+                        call system_clock(count=ic2)                        
+                        call cpu_time(stop_time)                        
+                        elsc=ic2 - ic1                        
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
+                        write(OUTPUT_UNIT, '("(Elapsed CPU Time : ")', ADVANCE = "NO");
                         write(OUTPUT_UNIT, '(E12.4)', ADVANCE = "NO") (stop_time - start_time);
-                        write(OUTPUT_UNIT, '("-[s]) ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT, '("-[s]) ")');
                             
+                        write(OUTPUT_UNIT, '("(Elapsed System Time : ")', ADVANCE = "NO");
+                        write(OUTPUT_UNIT, '(i20)', ADVANCE = "NO") elsc;
+                        write(OUTPUT_UNIT, '("-[s]) ")');                        
                         write(OUTPUT_UNIT, '("DONE")');
+                        write(OUTPUT_UNIT,*)'-------------------------------------------------';
                         write(OUTPUT_UNIT, *);
+                        
                     case( 6 )    
+                        write(OUTPUT_UNIT,'("************************************************************************")');
                         write(OUTPUT_UNIT,*)'Creating results vector......';
+                        write(OUTPUT_UNIT,'("************************************************************************")');
                         flush OUTPUT_UNIT;
                         nzones=size(dataContainer%ZonesData);
                         allocate( ResVec, STAT = status, SOURCE = DDDMS_getResultsVector() );
@@ -338,8 +408,8 @@
             stop;
         endif !CLOSE IF STATEMENT ON CHECKING HPC HARDWARE ARCHITECTURE.
         
-
-        pause;
-        stop;
+        write(*,*)'DirectDDMMain'
+!        pause;
+!        stop;
     end program DirectDDMMain
 

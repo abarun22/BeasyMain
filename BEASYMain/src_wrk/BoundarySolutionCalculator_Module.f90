@@ -107,6 +107,9 @@ contains
         character(len = 4)                        :: seqstring;               !==> VARIABLE TO DELETE?
 ! APB        
         integer(INT64)                            :: icountD,icountT,icount;
+        integer(INT32)                            :: inz,intnod,inp,mnod,intfnod,Bcnd;
+        real(REAL64)                              :: xb1,xb2,xb3;        
+        logical                                   :: infnodstat=.false.
 ! APB        
          
         !┌───────────────────┐
@@ -162,17 +165,17 @@ contains
             !┌───────────────────────────────────────────────────────────────────────────────┐
             !│COLLECT INTERFACE SOLUTION FOR THE CURRENT ZONE FROM VECTOR U_INTERFACESOLUTION│
             !└───────────────────────────────────────────────────────────────────────────────┘
-!            write(10,*)'Zonal interface index'
+            write(10,*)'Zonal interface index'
             countStep = 1;
-            do j = 1, size( inputData%IndependenInterfaceNodesArray(:, currZone), 1) 
-                !write(10,*)'Size of IndependenInterfaceNodesArray:','currZone',currZone
-                !write(10,*)3*size( inputData%IndependenInterfaceNodesArray(:,currZone),1)
-                if( inputData%IndependenInterfaceNodesArray(j, currZone) /= 0 ) then                    
+            do j = 1, size( inputData%IndependenInterfaceNodesArray(:, currZone), 1)                 
+                if( inputData%IndependenInterfaceNodesArray(j, currZone) /= 0 ) then                                 
                     UL((3*countStep - 2):(3*countStep)) = inputData%U_InterfaceSolution( (3*j - 2):(3*j) );                    
-!                    write(10,*)(3*j - 2),(3*j)
+                    write(10,*)(3*j - 2),(3*j)                    
                     countStep = countStep + 1;                    
                 end if                
             end do            
+            write(10,*)'UL array'
+            write(10,*)UL
         
             inputData%ZonesData(currZone)%ULI(:)=UL(:);
             
@@ -194,17 +197,47 @@ contains
                        inputData%ZonesData( currZone )%CB,             & !VECTOR Y.
                        1 );                                              !SPECIFIES THE INCREMENT FOR THE ELEMENTS OF Y.
             
-            !write(10,*)'Boundary tractions for Zone ID:',currZone
-            !write(10,*)inputData%ZonesData(currZone)%CB
-                       
-            !─────────────────────────────────────────────────────           
-            !====================TO DELETE========================
-            !write (seqstring,'(I0)') currZone;
-            !call Utility_OutputDataVector( "Output_FORTRAN_(CB_DL_UL)_Zone_"//trim( seqstring )//".out", &
-            !                               inputData%ZonesData( currZone )%CB );
-
-            !====================TO DELETE========================
-            !─────────────────────────────────────────────────────
+            write(10,*)'Size of CB array for Zone:',currZone
+            write(10,*)size(inputData%ZonesData(currZone)%CB)
+            
+            ! Rewrite interface results for the nodal directions where physical continuity BC's are applied
+            ! Interface traction results(CB) are used instead of displacements
+            countStep=0
+            infnodstat=.false.
+            do j = 1, size( inputData%IndependenInterfaceNodesArray(:, currZone), 1)
+                intfnod=inputData%IndependenInterfaceNodesArray(j, currZone)
+                infnodstat=inputParamsData%isNodMin(inputData,intfnod);
+                if( intfnod /= 0) then
+                    countStep=countStep+1
+                    write(10,*)'countStep',countStep
+                    if (infnodstat) then    ! check if the node considered equals the lower node ID of the node pair in interface definition file                                      
+                            write(10,*)'intfnod',intfnod
+                            do k=1,size(inputData%ZonesData( currZone )%CoordsNodesInZone(:,1))     ! Get zonal BC type index corresponding to global node ID
+                                if (intfnod.eq.int(inputData%ZonesData( currZone )%CoordsNodesInZone(k,1))) then
+                                    Bcnd=k
+                                    exit
+                                endif
+                            enddo
+                            
+!                        inputData%ZonesData(currZone)%ULI((3*countStep - 2):(3*countStep))=inputData%ZonesData( currZone )%CB((3*countStep - 2):(3*countStep));
+                            
+                            ! check if the node is assigned physical continuity BC's
+                            if( inputData%ZonesData( currZone )%BCsType(Bcnd, 1) == 39 ) then   
+                                inputData%ZonesData(currZone)%ULI(3*countStep - 2)=inputData%ZonesData(currZone)%CB(3*countStep - 2)
+                            endif
+                            if( inputData%ZonesData( currZone )%BCsType(Bcnd, 2) == 40 ) then
+                                inputData%ZonesData(currZone)%ULI(3*countStep - 1)=inputData%ZonesData(currZone)%CB(3*countStep - 1)
+                            endif                        
+                            if( inputData%ZonesData( currZone )%BCsType(Bcnd, 3) == 41 ) then
+                                inputData%ZonesData(currZone)%ULI(3*countStep)=inputData%ZonesData(currZone)%CB(3*countStep)         
+                            endif
+                    endif
+                end if
+            enddo           
+                     
+            write(10,*)'f_InterfaceSolution'
+            write(10,*)inputData%f_InterfaceSolution
+            
 
             !┌──────────────────────────────────────────────────────────────────┐
             !│(2)--DGEMV: COMPUTES MATRIX-VECTOR PRODUCT: XB <= B0L*(CB - DL*UL)│
@@ -224,15 +257,7 @@ contains
                        inputData%ZonesData( currZone )%XB,             & !VECTOR Y.
                        1 );                                              !SPECIFIES THE INCREMENT FOR THE ELEMENTS OF Y.
 
-            !─────────────────────────────────────────────────────           
-            !====================TO DELETE========================
-            !write (seqstring,'(I0)') currZone;
-            !call Utility_OutputDataVector( "Output_FORTRAN_(B0L_(CB_DL_UL)_)_Zone_"//trim( seqstring )//".out", &
-            !                               inputData%ZonesData( currZone )%XB );
-
-            !====================TO DELETE========================
-            !─────────────────────────────────────────────────────
-            
+          
             !┌─────────────────────────────────────────────────────────────┐
             !│(3)--DGEMV: COMPUTES MATRIX-VECTOR PRODUCT: XB <= XB - A0L*UL│
             !└─────────────────────────────────────────────────────────────┘
@@ -250,16 +275,7 @@ contains
                        BETA,                                           & !SPECIFIES THE SCALAR BETA. 
                        inputData%ZonesData( currZone )%XB,             & !VECTOR Y.
                        1 );                                              !SPECIFIES THE INCREMENT FOR THE ELEMENTS OF Y.
-
-            !─────────────────────────────────────────────────────           
-            !====================TO DELETE========================
-            !write (seqstring,'(I0)') currZone;
-            !call Utility_OutputDataVector( "Output_FORTRAN_(B0L_(CB_DL_UL)_(A0L_UL_)_)_Zone_"//trim( seqstring )//".out", &
-            !                               inputData%ZonesData( currZone )%XB );
-
-            !====================TO DELETE========================
-            !─────────────────────────────────────────────────────
-            
+           
             !┌─────────────────────────────────────────────────────────────┐
             !│(4)--DGEMV: COMPUTES MATRIX-VECTOR PRODUCT: XB <= XB + B00*YB│
             !└─────────────────────────────────────────────────────────────┘
@@ -278,14 +294,6 @@ contains
                        inputData%ZonesData( currZone )%XB,             & !VECTOR Y.
                        1 );                                              !SPECIFIES THE INCREMENT FOR THE ELEMENTS OF Y.
 
-            !─────────────────────────────────────────────────────           
-            !====================TO DELETE========================
-            !write (seqstring,'(I0)') currZone;
-            !call Utility_OutputDataVector( "Output_FORTRAN_(B00_YB_(B0L_(CB_DL_UL)_(A0L_UL_)_)_)_Zone_"//trim( seqstring )//".out", &
-            !                               inputData%ZonesData( currZone )%XB );
-
-            !====================TO DELETE========================
-            !─────────────────────────────────────────────────────
             
             !┌───────────────────────────────────────────────────────────────┐
             !│(5)--DGEMV: COMPUTES MATRIX-VECTOR PRODUCT: XB <= (A00)^(-1)*XB│
@@ -379,11 +387,13 @@ contains
             !└───────────────────────────────────────────────────────────────┘
             !
             icount=0;
-            do j = 1,size( inputData%ZonesData( currZone )%BCsType, 1 ) 
-                
+            do j = 1,size( inputData%ZonesData( currZone )%BCsType, 1 )               
+            
                 if( inputData%ZonesData( currZone )%BCsType(j, 1) == 5 ) then
 !                    TracSol(j, 2) = ( inputParamsData%gMatScaleFact*inputData%ZonesData( currZone )%XB( 3*j - 2) );    
-!                    DispSol(j, 2)=0;
+!                     xb1=inputData%ZonesData( currZone )%XB( 3*j - 2);
+!                     xb1=xb1/inputParamsData%gMatScaleFact;
+!                     inputData%ZonesData( currZone )%XB( 3*j - 2)=xb1;
                     icount=icount+1
                     
                 elseif( inputData%ZonesData( currZone )%BCsType(j, 1) == 8 ) then
@@ -393,8 +403,10 @@ contains
                 
                 if( inputData%ZonesData( currZone )%BCsType(j, 2) == 6 ) then
                     !TracSol(j, 3) = ( inputParamsData%gMatScaleFact*inputData%ZonesData( currZone )%XB( 3*j - 1) );    
-!                    DispSol(j, 3)=0;
-                    icount=icount+1                    
+!                    xb2=inputData%ZonesData( currZone )%XB( 3*j - 1);
+!                    xb2=xb2/inputParamsData%gMatScaleFact;
+!                    inputData%ZonesData( currZone )%XB( 3*j - 1)=xb2;
+                    icount=icount+1
                 elseif( inputData%ZonesData( currZone )%BCsType(j, 2) == 9 ) then
                     DispSol(j, 3) = DispSol(j, 3) + ( deforScaleFact*inputData%ZonesData( currZone )%XB( 3*j - 1) );    
                     icount=icount+1
@@ -402,7 +414,9 @@ contains
                 
                 if( inputData%ZonesData( currZone )%BCsType(j, 3) == 7 ) then
                     !TracSol(j, 4) = ( inputParamsData%gMatScaleFact*inputData%ZonesData( currZone )%XB( 3*j ) );    
-!                    DispSol(j, 4)=0;
+!                    xb3=inputData%ZonesData( currZone )%XB( 3*j );
+!                    xb3=xb3*inputParamsData%gMatScaleFact;
+!                    inputData%ZonesData( currZone )%XB( 3*j )=xb3;                
                     icount=icount+1
                     
                 elseif( inputData%ZonesData( currZone )%BCsType(j, 3) == 10 ) then
@@ -412,19 +426,19 @@ contains
             
             end do
 
-            !write(10,*)'icount',icount
-            !write(10,*)'scaleIndexVal',scaleIndexVal
-            !write(10,*)'Size of %BCsType array:'
-            !write(10,*)'currZone, size(BCsType)', currZone, size(inputData%ZonesData( currZone )%BCsType)
+            write(10,*)'icount',icount
+            write(10,*)'scaleIndexVal',scaleIndexVal
+            write(10,*)'Size of %BCsType array:'
+            write(10,*)'currZone, size(BCsType)', currZone, size(inputData%ZonesData( currZone )%BCsType)
             
-            !write(10,*)'IndependenInterfaceNodesArray array:'
-            !write(10,*)inputData%IndependenInterfaceNodesArray(:, currZone)
+            write(10,*)'IndependenInterfaceNodesArray array:'
+            write(10,*)inputData%IndependenInterfaceNodesArray(:, currZone)
             
-            !write(10,*)'Indices: Interface nodes'
-            !write(10,*) indices
-            !
-            !write(10,*)'Indices2: Interface nodes'
-            !write(10,*) indices2
+            write(10,*)'Indices: Interface nodes'
+            write(10,*) indices
+            
+            write(10,*)'Indices2: Interface nodes'
+            write(10,*) indices2
             
             !┌────────────────────────────────────────────────────────────────┐
             !│UPDATE NODES DISPLACEMENT VALUES USING INTERFACE SOLUTION VALUES│
@@ -438,8 +452,41 @@ contains
             !Z-COMPONENT
             DispSol(indices, 4) = DispSol(indices, 4) + ( deforScaleFact*inputData%U_InterfaceSolution( 3*indices2 - 0 ) );
 
-            !write(10,*)'Size of indices2 array'
-            !write(10,*)size(indices2)
+            
+            write(10,*)'Size of indices2 array'
+            write(10,*)size(indices2)
+            
+            !icount=0;
+            !do inz=1,size(inputData%IndependenInterfaceNodesArray(:, currZone))
+            !    intnod=inputData%IndependenInterfaceNodesArray(inz,currZone)
+            !    do inp=1,size(inputData%InterfaceNP(:,1))
+            !        mnod=min(inputData%InterfaceNP(inp,1),inputData%InterfaceNP(inp,2))
+            !        write(10,*)'currZone,intnod,inz,inp,mnod:',currZone,intnod,inz,inp,mnod
+            !        if (intnod.eq.mnod) then
+            !            icount=icount+1;
+            !            if( inputData%ZonesData( currZone )%BCsType(intnod, 1) == 39 ) then
+            !                inputData%U_InterfaceSolution(3*inz - 2)=inputData%f_InterfaceSolution(3*inz - 2)
+            !            endif
+            !            if( inputData%ZonesData( currZone )%BCsType(intnod, 2) == 40 ) then
+            !                inputData%U_InterfaceSolution(3*inz - 1)=inputData%f_InterfaceSolution(3*inz - 1)
+            !            endif                        
+            !            if( inputData%ZonesData( currZone )%BCsType(intnod, 3) == 41 ) then
+            !                inputData%U_InterfaceSolution(3*inz )=inputData%f_InterfaceSolution(3*inz )
+            !            endif
+            !        endif
+            !    enddo
+            !enddo
+                       
+            
+            !write(10,*)'icount after array copy',icount
+            
+            !countStep = 1;
+            !do j = 1, size( inputData%IndependenInterfaceNodesArray(:, currZone), 1)                 
+            !    if( inputData%IndependenInterfaceNodesArray(j, currZone) /= 0 ) then                    
+            !        inputData%ZonesData(currZone)%ULI((3*countStep - 2):(3*countStep)) = inputData%U_InterfaceSolution( (3*j - 2):(3*j) );                                     
+            !        countStep = countStep + 1;                    
+            !    end if                
+            !end do            
             
             !────────────────────────────────────────────────────────           
             !====================TO print out========================
@@ -515,9 +562,10 @@ contains
                     stop;
                 end if
             end if
-
-        end do  !END OF LOOP STATEMENT OVER ZONES IN THE MODEL FOR WHICH A BOUNDARY SOLUTION WAS REQUIRED  
-
+            
+        end do  !END OF LOOP STATEMENT OVER ZONES IN THE MODEL FOR WHICH A BOUNDARY SOLUTION WAS REQUIRED          
+        
+        
     end subroutine calculateOnSM    
     
 end module BoundarySolutionCalculator_Module

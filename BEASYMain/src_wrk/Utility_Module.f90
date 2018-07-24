@@ -250,6 +250,7 @@ contains
             !│SELECT HPC ARCHITECTURE WHERE DDM WILL BE RUN│
             !└─────────────────────────────────────────────┘
             write(OUTPUT_UNIT, '("Select HPC architecture...:")');
+
             write(OUTPUT_UNIT, '("Shared Memory arch...............==> 1 ")');
             write(OUTPUT_UNIT, '("Distributed Memory arch..........==> 2 ")');
             read(OUTPUT_UNIT, *)HPC_Arch;

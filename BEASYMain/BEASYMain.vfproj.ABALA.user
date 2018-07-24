@@ -3,5 +3,7 @@
 	<Configurations>
 		<Configuration Name="Debug|Win32"/>
 		<Configuration Name="Release|Win32"/>
-		<Configuration Name="Debug|x64" CommandArguments="-pf=C:\Users\ABALA\Desktop\test_2zone_DSP_PC\params.dat -bf=C:\Users\ABALA\Desktop\test_2zone_DSP_PC\batchFile.dat"/>
-		<Configuration Name="Release|x64" CommandArguments="-pf=C:\Users\ABALA\Desktop\test_2zone_DSP_PC\params.dat -bf=C:\Users\ABALA\Desktop\test_2zone_DSP_PC\batchFile.dat"/></Configurations></VisualStudioUserFile>
+		<Configuration Name="Debug|x64" CommandArguments="-pf=params.dat -bf=batchFile.dat"/>
+		<Configuration Name="Release|x64" CommandArguments="-pf=params.dat -bf=batchFile.dat"/>
+		<Configuration Name="Release_Serial|Win32"/>
+		<Configuration Name="Release_Serial|x64" CommandArguments="-pf=params.dat -bf=batchFile.dat"/></Configurations></VisualStudioUserFile>

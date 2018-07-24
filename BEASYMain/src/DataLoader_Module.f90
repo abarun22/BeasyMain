@@ -155,7 +155,7 @@ contains
             pause;
             stop;
         else
-            dataContainer%InterfaceNP(:, :) = 0;
+!            dataContainer%InterfaceNP(:, :) = 0;
         end if
         
         !┌─────────────────────────────────────────────────────────┐
@@ -305,8 +305,10 @@ contains
             !│OPEN FILE CONTAINING NODES COORDINATES AND BOUNDARY CONDITIONS FOR THE CURRENT ZONE│
             !└───────────────────────────────────────────────────────────────────────────────────┘
             open(NEWUNIT = fid, ACTION = 'read', FILE = FileNameCoordData, status = 'old'); 
-            read(fid, '(I8)', IOSTAT = status) temporaryIntVal(1); !VARIABLE CONTAINING THE NUMBER OF NODES BELONGING TO THE CURRENT ZONE
-
+            read(fid, '(I8)', IOSTAT = status) temporaryIntVal(1); !VARIABLE CONTAINING THE NUMBER OF NODES BELONGING TO THE CURRENT ZONE           
+                      
+            write(*,*)'Zone #:',i
+            write(*,*)'Reading nodal coordinates file....'
             !┌─────────────────────────────────────────────────────────────┐
             !│ALLOCATE AND INITIALISE SUB MATRIX "A00" FOR THE CURRENT ZONE│
             !└─────────────────────────────────────────────────────────────┘
@@ -321,6 +323,8 @@ contains
                dataContainer%ZonesData( i )%A00 = 0.0; 
             end if
             
+!            write(*,*)'Allocated A00....'
+            
             !┌─────────────────────────────────────────────────────────────┐
             !│ALLOCATE AND INITIALISE SUB MATRIX "A0L" FOR THE CURRENT ZONE│
             !└─────────────────────────────────────────────────────────────┘
@@ -334,6 +338,8 @@ contains
             else
                 dataContainer%ZonesData( i )%A0L = 0.0;    
             end if            
+            
+!            write(*,*)'Allocated A0L....'
 
             !┌─────────────────────────────────────────────────────────────┐
             !│ALLOCATE AND INITIALISE SUB MATRIX "AL0" FOR THE CURRENT ZONE│
@@ -348,6 +354,8 @@ contains
             else
                dataContainer%ZonesData( i )%AL0 = 0.0; 
             end if
+            
+!            write(*,*)'Allocated AL0....'
 
             !┌─────────────────────────────────────────────────────────────┐
             !│ALLOCATE AND INITIALISE SUB MATRIX "ALL" FOR THE CURRENT ZONE│
@@ -498,6 +506,8 @@ contains
                 dataContainer%ZonesData( i )%resVec = 0.0;    
             end if
             
+!            write(*,*)'Allocated resvec....'
+            
             !┌───────────────────────────────────────────────────────────────────────────────────────────────┐
             !│ALLOCATE AND INITIALISE SUB VECTOR "COORDSNODESINZONE" TO STORE NODES DATA FOR THE CURRENT ZONE│
             !└───────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -508,8 +518,6 @@ contains
                 pause;
                 stop;
             end if            
-            
-            write(10,*)'IndepInterfNodesCount', IndepInterfNodesCount
             
             !┌──────────────────────────────────────────────────────────────────────────────────────────────┐
             !│LOAD NODES COORDINATES DATA FOR THE CURRENT ZONE IN THE SUB-STRUCTURE VECTOR COORDSNODESINZONE│
@@ -627,8 +635,6 @@ contains
 
             numRowBlocksInZone = ceiling( dble( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) )/dble( inputParamsData%blockSizeValue ) ); 
             
-            write(10,*)'numRowBlocksInZone:',numRowBlocksInZone
-
             !┌───────────────────────────────────────────────────────────────────┐
             !│ALLOCATE TEMPORARY DATA STRUCTURE TEMPA_MATRIX FOR THE CURRENT ZONE│
             !└───────────────────────────────────────────────────────────────────┘
@@ -677,6 +683,8 @@ contains
 
             open(NEWUNIT = fid,   ACTION = 'read', FILE = FileNameAMatrix, STATUS = 'old', ACCESS = 'direct', FORM = 'unformatted', RECL = recLen);
             open(NEWUNIT = fid_2, ACTION = 'read', FILE = FileNameBMatrix, STATUS = 'old', ACCESS = 'direct', FORM = 'unformatted', RECL = recLen);
+            
+            write(*,*)'Reading A and B matrices....'
 
 !            outp=RESHAPE ((/3, 4, 5, 6, 7, 8, 9 , 10/), (/2, 4/));
             
@@ -696,6 +704,8 @@ contains
                     !              ( (j - 1)*inputParamsData%blockSizeValue + 1 ):( j*inputParamsData%blockSizeValue ) ) &
                     !            = reshape( recordRow(3:( inputParamsData%blockSizeValue*inputParamsData%blockSizeValue ) + 2), &
                     !              [inputParamsData%blockSizeValue, inputParamsData%blockSizeValue] );
+                    
+!                    write(*,*)'Copying record for iteration: k=', k, 'and j=',j, 'Zone ID:',i
                                   
                    tempA_Matrix(((k-1)*ibs+1):(k*ibs),((j-1)*ibs+1):(j*ibs)) &
                                 = reshape(recordRow(3:((ibs*ibs)+2)), &
@@ -720,10 +730,14 @@ contains
 
             close(fid);                 
             close(fid_2); 
+            
+            write(*,*)'Assigning A and B matrices data ....'
+            write(*,*)
 
             !┌────────────────────────────────────────┐
             !│FILL A00 SUB-MATRIX FOR THE CURRENT ZONE│
             !└────────────────────────────────────────┘            
+            write(*,*)'Creating A00 ....'
             dataContainer%ZonesData( i )%A00(:, :) = tempA_Matrix( 1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ), &
                                                                    1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount )  &
                                                                  );                                                                               
@@ -737,6 +751,7 @@ contains
             !                                                     ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1: &
             !                                                     );
             
+            write(*,*)'Creating A0L ....'
             dataContainer%ZonesData( i )%A0L(:, :) = tempA_Matrix( 1:index1, (index1)+1:);                                                                 
 
             !┌────────────────────────────────────────┐
@@ -744,7 +759,8 @@ contains
             !└────────────────────────────────────────┘
             !dataContainer%ZonesData( i )%AL0(:, :) = tempA_Matrix( ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1:, &
             !                                                         1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) );
-                                                                     
+            
+            write(*,*)'Creating AL0 ....'
             dataContainer%ZonesData( i )%AL0(:, :) = tempA_Matrix( index1+1:, 1:index1);
 
             !┌────────────────────────────────────────┐
@@ -752,7 +768,8 @@ contains
             !└────────────────────────────────────────┘
             !dataContainer%ZonesData( i )%ALL(:, :) = tempA_Matrix( ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1:, &
             !                                                       ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1: );
-                                                                   
+            
+            write(*,*)'Creating ALL ....'
             dataContainer%ZonesData( i )%ALL(:, :) = tempA_Matrix( (index1)+1:, (index1)+1:);
 
             !┌────────────────────────────────────────┐
@@ -760,7 +777,8 @@ contains
             !└────────────────────────────────────────┘
             !dataContainer%ZonesData( i )%B00(:, :) = tempB_Matrix( 1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ), &
             !                                                       1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) );
-                                                                   
+            
+            write(*,*)'Creating B00 ....'
             dataContainer%ZonesData( i )%B00(:, :) = tempB_Matrix( 1:index1, 1:index1);
             
             !┌────────────────────────────────────────┐
@@ -769,6 +787,7 @@ contains
             !dataContainer%ZonesData( i )%B0L(:, :) = tempB_Matrix( 1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ), &
             !                                                     ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1: );
 
+            write(*,*)'Creating B0L ....'
             dataContainer%ZonesData( i )%B0L(:, :) = tempB_Matrix( 1:index1, (index1)+1:);
                         
             !┌────────────────────────────────────────┐
@@ -777,6 +796,7 @@ contains
             !dataContainer%ZonesData( i )%BL0(:, :) = tempB_Matrix( ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1:, &
             !                                                       1:( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) );
 
+            write(*,*)'Creating BL0 ....'
             dataContainer%ZonesData( i )%BL0(:, :) = tempB_Matrix((index1)+1:, 1:index1);
                        
             !┌────────────────────────────────────────┐
@@ -785,6 +805,7 @@ contains
             !dataContainer%ZonesData( i )%BLL(:, :) = tempB_Matrix( ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1:, &
             !                                                       ( 3*size( dataContainer%ZonesData( i )%CoordsNodesInZone( :, 1 ) , 1) - 3*IndepInterfNodesCount ) + 1: );
             
+            write(*,*)'Creating BLL ....'
             dataContainer%ZonesData( i )%BLL(:, :) = tempB_Matrix( (index1)+1:, (index1)+1:);
                         
             !┌──────────────────────────────────────────────────────────────────┐
